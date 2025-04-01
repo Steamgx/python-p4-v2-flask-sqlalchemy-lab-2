@@ -25,7 +25,7 @@ class Customer(db.Model, SerializerMixin):
         return {
             'id': self.id,
             'name': self.name,
-            'reviews': [review.id for review in self.reviews]  # Return only IDs to avoid recursion
+            'reviews': [review.id for review in self.reviews]  # Include reviews in serialization
         }
 
 class Review(db.Model, SerializerMixin):
@@ -53,8 +53,8 @@ class Review(db.Model, SerializerMixin):
         return {
             'id': self.id,
             'comment': self.comment,
-            'customer': self.customer.to_dict() if self.customer else None,
-            'item': self.item.to_dict() if self.item else None
+            'customer': {'id': self.customer.id, 'name': self.customer.name} if self.customer else None,
+            'item': {'id': self.item.id, 'name': self.item.name, 'price': self.item.price} if self.item else None
         }
 
 class Item(db.Model, SerializerMixin):
@@ -72,5 +72,5 @@ class Item(db.Model, SerializerMixin):
             'id': self.id,
             'name': self.name,
             'price': self.price,
-            'reviews': [review.id for review in self.reviews]  # Return only IDs to avoid recursion
+            'reviews': [review.id for review in self.reviews]  # Include reviews in serialization
         }
