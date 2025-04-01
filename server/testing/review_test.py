@@ -1,13 +1,30 @@
 from app import app, db
 from server.models import Customer, Item, Review
 
-
 class TestReview:
     '''Review model in models.py'''
 
+    @classmethod
+    def setup_class(cls):
+        '''Setup method to create the database tables.'''
+        with app.app_context():
+            db.create_all()
+
+    @classmethod
+    def teardown_class(cls):
+        '''Teardown method to drop the database tables.'''
+        with app.app_context():
+            db.drop_all()
+
     def test_can_be_instantiated(self):
         '''can be invoked to create a Python object.'''
-        r = Review()
+        with app.app_context():
+            c = Customer(name='Test Customer')
+            i = Item(name='Test Item', price=10.00)
+            db.session.add_all([c, i])
+            db.session.commit()
+            
+            r = Review(comment='great!', customer=c, item=i)  # Updated line
         assert r
         assert isinstance(r, Review)
 
@@ -20,7 +37,12 @@ class TestReview:
         '''can be added to a transaction and committed to review table with comment column.'''
         with app.app_context():
             assert 'comment' in Review.__table__.columns
-            r = Review(comment='great!')
+            c = Customer(name='Test Customer')
+            i = Item(name='Test Item', price=10.00)
+            db.session.add_all([c, i])
+            db.session.commit()
+            
+            r = Review(comment='great!', customer=c, item=i)  # Updated line
             db.session.add(r)
             db.session.commit()
             assert hasattr(r, 'id')
@@ -37,14 +59,13 @@ class TestReview:
             db.session.add_all([c, i])
             db.session.commit()
 
-            r = Review(comment='great!', customer=c, item=i)
+            r = Review(comment='great!', customer=c, item=i)  # Updated line
             db.session.add(r)
             db.session.commit()
 
             # check foreign keys
             assert r.customer_id == c.id
             assert r.item_id == i.id
-            # check relationships
             assert r.customer == c
             assert r.item == i
             assert r in c.reviews
